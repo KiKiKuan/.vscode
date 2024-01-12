@@ -1,0 +1,796 @@
+{
+	"name": "vscode-sqlite3-editor",
+	"displayName": "SQLite3 Editor",
+	"version": "1.0.161",
+	"description": "Edit SQLite3 files like you would in spreadsheet applications.",
+	"main": "extension.js",
+	"publisher": "yy0931",
+	"icon": "icon.gif",
+	"repository": {
+		"url": "https://github.com/yy0931/sqlite3-editor",
+		"type": "git"
+	},
+	"bugs": {
+		"url": "https://github.com/yy0931/sqlite3-editor/issues"
+	},
+	"scripts": {
+		"test": "tsc --noEmit && eslint --max-warnings 0 .",
+		"build": "tsx build.mts",
+		"build-dev": "cross-env VSCODE_DEBUG=true SKIP_BIN_CHECK=1 tsx build.mts",
+		"vscode:prepublish": "node ./check-changelog.js && npm run build",
+		"install-extension": "node install-extension-locally.js"
+	},
+	"engines": {
+		"vscode": "^1.66.0"
+	},
+	"categories": [
+		"Data Science",
+		"Education",
+		"Other",
+		"Programming Languages",
+		"Visualization"
+	],
+	"activationEvents": [
+		"onStartupFinished",
+		"onFileSystem:sqlite3-memory",
+		"onCustomEditor:sqlite3-editor.editor",
+		"onCustomEditor:sqlite3-editor.optional",
+		"onView:sqlite3-editor.tableList",
+		"onCommand:sqlite3-editor.associate"
+	],
+	"contributes": {
+		"commands": [
+			{
+				"command": "sqlite3-editor.showHistory",
+				"title": "%sqlite3-editor.showHistory.title%"
+			},
+			{
+				"command": "sqlite3-editor.clearHistory",
+				"title": "%sqlite3-editor.clearHistory.title%"
+			},
+			{
+				"command": "sqlite3-editor.clearGlobalState",
+				"title": "SQLite3 Editor: Clear Global State"
+			},
+			{
+				"command": "sqlite3-editor.debugStarUsDialog",
+				"title": "SQLite3 Editor: Developer: Show Star Us Dialog in This Session",
+				"enablement": "config.sqlite3-editor.developerMode"
+			},
+			{
+				"command": "sqlite3-editor.debugFeedbackDialog",
+				"title": "SQLite3 Editor: Developer: Show Feedback Dialog in This Session",
+				"enablement": "config.sqlite3-editor.developerMode"
+			},
+			{
+				"command": "sqlite3-editor.debugTutorial",
+				"title": "SQLite3 Editor: Developer: Show Tutorial in This Session",
+				"enablement": "config.sqlite3-editor.developerMode"
+			},
+			{
+				"command": "sqlite3-editor.execute",
+				"title": "%sqlite3-editor.execute.title%",
+				"enablement": "editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.executeSelection",
+				"title": "%sqlite3-editor.executeSelection.title%",
+				"enablement": "editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.executescript",
+				"title": "%sqlite3-editor.executescript.title%",
+				"icon": "$(run)",
+				"enablement": "editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.openPanel",
+				"title": "%sqlite3-editor.openPanel.title%",
+				"icon": "$(open-preview)",
+				"enablement": "editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.associate",
+				"title": "%sqlite3-editor.associate.title%",
+				"icon": {
+					"light": "icon-sm-light.svg",
+					"dark": "icon-sm-dark.svg"
+				},
+				"enablement": "editorLangId == sql || editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.toggleSchema",
+				"title": "%sqlite3-editor.toggleSchema.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.openCustomQueryEditor",
+				"title": "%sqlite3-editor.openCustomQueryEditor.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.toggleAutoReload",
+				"title": "%sqlite3-editor.toggleAutoReload.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.find",
+				"title": "%sqlite3-editor.find.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.selectTable",
+				"title": "%sqlite3-editor.selectTable.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor || view.sqlite3-editor.tableList.visible"
+			},
+			{
+				"command": "sqlite3-editor.createTable",
+				"title": "%sqlite3-editor.createTable.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor || view.sqlite3-editor.tableList.visible",
+				"icon": "$(new-file)"
+			},
+			{
+				"command": "sqlite3-editor.dropTable",
+				"title": "%sqlite3-editor.dropTable.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor || view.sqlite3-editor.tableList.visible"
+			},
+			{
+				"command": "sqlite3-editor.dropView",
+				"title": "%sqlite3-editor.dropView.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor || view.sqlite3-editor.tableList.visible"
+			},
+			{
+				"command": "sqlite3-editor.alterTableRename",
+				"title": "%sqlite3-editor.alterTableRename.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor || view.sqlite3-editor.tableList.visible"
+			},
+			{
+				"command": "sqlite3-editor.insert",
+				"title": "%sqlite3-editor.insert.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.compare",
+				"title": "%sqlite3-editor.compare.title%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.openInMemoryDatabase",
+				"title": "%sqlite3-editor.openInMemoryDatabase.title%"
+			},
+			{
+				"command": "sqlite3-editor.goto",
+				"title": "%sqlite3-editor.goto%",
+				"enablement": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional"
+			}
+		],
+		"menus": {
+			"editor/title/run": [
+				{
+					"command": "sqlite3-editor.executescript",
+					"when": "editorLangId == query-editor"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "sqlite3-editor.executeSelection",
+					"when": "editorLangId == query-editor",
+					"group": "1_modification"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "sqlite3-editor.openPanel",
+					"group": "navigation",
+					"when": "editorLangId == query-editor"
+				},
+				{
+					"command": "sqlite3-editor.associate",
+					"group": "navigation",
+					"when": "editorLangId == sql || editorLangId == query-editor"
+				}
+			],
+			"view/title": [
+				{
+					"command": "sqlite3-editor.createTable",
+					"when": "view == sqlite3-editor.tableList",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "sqlite3-editor.dropTable",
+					"when": "view == sqlite3-editor.tableList && viewItem == sqlite3-editor.viewItem.table"
+				},
+				{
+					"command": "sqlite3-editor.dropView",
+					"when": "view == sqlite3-editor.tableList && viewItem == sqlite3-editor.viewItem.view"
+				},
+				{
+					"command": "sqlite3-editor.alterTableRename",
+					"when": "view == sqlite3-editor.tableList && viewItem == sqlite3-editor.viewItem.table"
+				}
+			]
+		},
+		"configuration": [
+			{
+				"title": "General",
+				"properties": {
+					"sqlite3-editor.pragma_foreign_key": {
+						"type": "string",
+						"default": "ON",
+						"enum": [
+							"ON",
+							"OFF"
+						],
+						"markdownDescription": "Controls whether the enforcement of foreign key constraints is enabled. This configuration has the same effect as setting `\"sqlite3-editor.connectionSetupQueries.driver.sqlite3\": { \".*\": \"PRAGMA foreign_keys = <value>;\" }`, except changes are applied to open database connections immediately."
+					},
+					"sqlite3-editor.connectionSetupQueries.driver.sqlite3": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "string"
+						},
+						"default": {},
+						"markdownDescription": "%sqlite3-editor.connectionSetupQueries.driver.sqlite3.markdownDescription%"
+					},
+					"sqlite3-editor.connectionSetupQueries.debug": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "%sqlite3-editor.connectionSetupQueries.debug.markdownDescription%"
+					},
+					"sqlite3-editor.runtimeLoadableExtensions.driver.sqlite3": {
+						"type": "object",
+						"additionalProperties": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						},
+						"default": {},
+						"markdownDescription": "%sqlite3-editor.runtimeLoadableExtensions.driver.sqlite3.markdownDescription%"
+					},
+					"sqlite3-editor.maxHistoryEntries": {
+						"type": "integer",
+						"default": 500,
+						"minimum": 0,
+						"markdownDescription": "With the default configuration, this extension stores the last 500 SQL queries executed in [ExtensionContext.globalState](https://code.visualstudio.com/api/references/vscode-api#ExtensionContext.globalState). You can view them using `SQLite3 Editor: Show History` and clear them using `SQLite3 Editor: Clear History` from [the command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette). This setting specifies the number of queries to save. If set to 0, history will not be saved."
+					},
+					"sqlite3-editor.telemetry": {
+						"type": "string",
+						"default": "undecided",
+						"enum": [
+							"undecided",
+							"allow",
+							"deny"
+						],
+						"markdownDescription": "%sqlite3-editor.telemetry.markdownDescription%"
+					},
+					"sqlite3-editor.developerMode": {
+						"type": "boolean",
+						"default": false,
+						"markdownDeprecationMessage": "Developers Only."
+					},
+					"sqlite3-editor.executablePath": {
+						"type": "string",
+						"markdownDeprecationMessage": "Developers Only."
+					}
+				}
+			},
+			{
+				"title": "User Interface",
+				"properties": {
+					"sqlite3-editor.ui.nativeTableSelector": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "%sqlite3-editor.ui.nativeTableSelector.markdownDescription%",
+						"markdownDeprecationMessage": "The performance of the default table selector have been significantly improved, and users should not need this option."
+					},
+					"sqlite3-editor.ui.tableSelector.legacy": {
+						"type": "boolean",
+						"default": false
+					},
+					"sqlite3-editor.ui.tableSelector.displayColumns": {
+						"type": "boolean",
+						"default": false
+					},
+					"sqlite3-editor.ui.erDiagram.displayReferencingColumns": {
+						"type": "boolean",
+						"default": false,
+						"markdownDeprecationMessage": "experimental"
+					},
+					"sqlite3-editor.ui.wrapTableHeader": {
+						"type": "boolean",
+						"default": true,
+						"markdownDescription": "Controls whether the texts in the table column headers are wrapped.",
+						"markdownDeprecationMessage": "Use `\"sqlite3-editor.ui.tableHeaderMaxLines\": 1` instead."
+					},
+					"sqlite3-editor.ui.tableHeaderMaxLines": {
+						"type": "integer",
+						"default": 6,
+						"minimum": 1,
+						"markdownDescription": "Controls the maximum number of lines in a table header. If it is set to 1, text wrapping in the table header will be disabled. This configuration is applicable only when the deprecated configuration \"sqlite3-editor.ui.wrapTableHeader\" is either unset or set to true."
+					},
+					"sqlite3-editor.ui.alignNumberRight": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "%sqlite3-editor.ui.alignNumberRight.markdownDescription%"
+					},
+					"sqlite3-editor.ui.defaultIndexName.table": {
+						"type": "string",
+						"default": "idx_{{tableName}}",
+						"markdownDescription": "%sqlite3-editor.ui.defaultIndexName.table.markdownDescription%"
+					},
+					"sqlite3-editor.ui.defaultIndexName.tableAndColumns": {
+						"type": "string",
+						"default": "idx_{{tableName}}_{{columns}}",
+						"markdownDescription": "%sqlite3-editor.ui.defaultIndexName.tableAndColumns.markdownDescription%"
+					},
+					"sqlite3-editor.ui.recordCountingLimit": {
+						"type": "integer",
+						"default": 10000000,
+						"minimum": 1,
+						"markdownDescription": "%sqlite3-editor.ui.recordCountingLimit.markdownDescription%"
+					},
+					"sqlite3-editor.ui.conditionalFormatting": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"database": {
+									"type": "string",
+									"description": "The basename of the database file."
+								},
+								"table": {
+									"type": "string"
+								},
+								"column": {
+									"type": "string"
+								},
+								"color": {
+									"enum": [
+										"red",
+										"orange",
+										"amber",
+										"yellow",
+										"lime",
+										"green",
+										"emerald",
+										"teal",
+										"cyan",
+										"sky",
+										"blue",
+										"indigo",
+										"violet",
+										"purple",
+										"fuchsia",
+										"pink",
+										"rose"
+									],
+									"default": "orange",
+									"description": "\"red\", \"orange\", \"amber\", \"yellow\", \"lime\", \"green\", \"emerald\", \"teal\", \"cyan\", \"sky\", \"blue\", \"indigo\", \"violet\", \"purple\", \"fuchsia\", \"pink\", or \"rose\"."
+								},
+								"equal": {
+									"type": "string",
+									"description": "Applies the conditional formatting if `<cell value casted to a string> == <equal>`."
+								},
+								"contains": {
+									"type": "string",
+									"description": "Applies the conditional formatting if `<cell value casted to a string> contains <contains>`."
+								},
+								"startsWith": {
+									"type": "string",
+									"description": "Applies the conditional formatting if `<cell value casted to a string> starts with <contains>`."
+								},
+								"endsWith": {
+									"type": "string",
+									"description": "Applies the conditional formatting if `<cell value casted to a string> ends with <contains>`."
+								},
+								"min": {
+									"type": "number",
+									"description": "Set the opacity to `(<cell value> - <min>) / (<max> - <min>)` (clipped to 0-1). Requires max."
+								},
+								"max": {
+									"type": "number",
+									"description": "Set the opacity to `(<cell value> - <min>) / (<max> - <min>)` (clipped to 0-1). Requires min."
+								}
+							},
+							"additionalProperties": false
+						},
+						"default": [],
+						"markdownDescription": "```json\n\"sqlite3-editor.ui.conditionalFormatting\": [\n    // Parameters\n    {\n        // ==== Apply to specific database/table/column. ====\n        // If omitted, the conditional formatting is applied to all databases, tables, and columns.\n        \"database\": \"name\", // optional\n        \"table\": \"name\",    // optional\n        \"column\": \"name\",   // optional\n\n        // ==== Base color. Defaults to \"cyan\". ====\n        \"color\": \"amber\", // optional\n\n        // ==== Conditions ====\n        // Specify one of the following conditions.\n\n        // Color scale\n        \"min\": 0, \"max\": 100, // both min and max are required\n\n        // Single value\n        \"equal\": \"text\",\n        \"contains\": \"text\",\n        \"startsWith\": \"text\",\n        \"endsWith\": \"text\"\n    },\n\n    // Example 1\n    {\n        \"database\": \"test.db\",\n        \"table\": \"table1\",\n        \"min\": 0,\n        \"max\": 10\n    },\n\n    // Example 2\n    {\n        \"database\": \"test2.db\",\n        \"table\": \"table2\",\n        \"column\": \"column2\",\n        \"color\": \"red\",\n        \"contains\": \"foo\"\n    }\n]\n```"
+					},
+					"sqlite3-editor.ui.foreignKeyDropdownLimit": {
+						"type": "integer",
+						"minimum": 1,
+						"default": 1001,
+						"markdownDescription": "%sqlite3-editor.ui.foreignKeyDropdownLimit.markdownDescription%"
+					},
+					"sqlite3-editor.ui.performanceNotice": {
+						"type": "boolean",
+						"default": true,
+						"markdownDescription": "%sqlite3-editor.ui.performanceNotice.markdownDescription%"
+					},
+					"sqlite3-editor.ui.visibleColumnLimit": {
+						"type": "integer",
+						"default": 128,
+						"minimum": 1,
+						"markdownDescription": "Specifies the maximum number of columns that will be displayed in the table. This configuration is used to prevent the window from freezing when a table with a very large number of columns is opened."
+					},
+					"sqlite3-editor.ui.insert.textareaLimit": {
+						"type": "integer",
+						"default": 50,
+						"minimum": 1,
+						"markdownDescription": "Specifies the maximum number of text boxes to display in the INSERT editor. To prevent the window from freezing, when the number of columns is larger than this value, the text boxes are hidden behind a button."
+					},
+					"sqlite3-editor.ui.alwaysDisplayTabs": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "This displays the tab bar, which is used to save the table state within an editor tab, even when there is only one tab present. The tab bar becomes visible only if you have performed actions related to foreign keys, or if this configuration value is set to true."
+					},
+					"sqlite3-editor.ui.movePanelIfSpaceAllows": {
+						"type": "string",
+						"enum": [
+							"bottom",
+							"left",
+							"right"
+						],
+						"default": "bottom",
+						"markdownDescription": "Specifies the panel's position when (screen width - table width > 350px). The \"bottom\" option will keep the panel at the bottom."
+					},
+					"sqlite3-editor.ui.displayLanguage": {
+						"type": "string",
+						"enum": [
+							"automatic",
+							"en",
+							"zh-CN",
+							"ru",
+							"de",
+							"pt-BR",
+							"ko",
+							"ja",
+							"fr",
+							"es",
+							"it",
+							"zh-TW"
+						],
+						"enumItemLabels": [
+							"Automatic",
+							"English",
+							"简体中文",
+							"Русский",
+							"Deutsch",
+							"Português (Brasil)",
+							"한국어",
+							"日本語",
+							"Français",
+							"Español",
+							"Italiano",
+							"繁體中文"
+						],
+						"default": "automatic",
+						"markdownDescription": "Overrides the default display language of the UI. For the changes to take effect, reload the window. If set to \"automatic\", the extension will use VSCode's display language config value."
+					},
+					"sqlite3-editor.ui.indexVisualization.maxColumns": {
+						"type": "integer",
+						"minimum": 0,
+						"default": 30
+					},
+					"sqlite3-editor.ui.experimental.resizeTableHeaderByDragging": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "If enabled, you can adjust the \"sqlite3-editor.ui.tableHeaderMaxLines\" configuration value by dragging the top edge of the table's lowest row number. This feature is experimental, as the current interface is unintuitive."
+					},
+					"sqlite3-editor.ui.experimental.otherTools.compareDatabases": {
+						"type": "boolean",
+						"default": false
+					},
+					"sqlite3-editor.ui.tableCellForeignKeyPreview.opacity": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 1,
+						"default": 0.5,
+						"markdownDescription": "Controls the opacity of the foreign key preview rendered within table cells. Setting it to 0 disables the rendering."
+					}
+				}
+			},
+			{
+				"title": "Query Editor",
+				"properties": {
+					"sqlite3-editor.codeLens.hideExecuteAndSelectButtons": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "%sqlite3-editor.codeLens.hideExecuteAndSelectButtons.markdownDescription%"
+					},
+					"sqlite3-editor.diagnostics.disableSyntaxCheck": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "%sqlite3-editor.diagnostics.disableSyntaxCheck.markdownDescription%"
+					},
+					"sqlite3-editor.completion.functionCase": {
+						"type": "string",
+						"enum": [
+							"upper",
+							"lower"
+						],
+						"default": "lower",
+						"markdownDescription": "%sqlite3-editor.completion.functionCase.markdownDescription%"
+					},
+					"sqlite3-editor.format.commaPosition": {
+						"type": "string",
+						"enum": [
+							"before",
+							"after",
+							"tabular"
+						],
+						"enumDescriptions": [
+							"Comma preceding each column",
+							"Comma following each column",
+							"Comma right-aligned to longest column line"
+						],
+						"default": "after",
+						"markdownDescription": "Where to place commas for SELECT and GROUP BY clauses"
+					},
+					"sqlite3-editor.format.denseOperators": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Strip whitespace around operators such as + or >="
+					},
+					"sqlite3-editor.format.expressionWidth": {
+						"type": "integer",
+						"default": 50,
+						"minimum": 0,
+						"markdownDescription": "Number of characters allowed in each line before breaking"
+					},
+					"sqlite3-editor.format.indentStyle": {
+						"type": "string",
+						"enum": [
+							"standard",
+							"tabularLeft",
+							"tabularRight"
+						],
+						"enumDescriptions": [
+							"Standard SQL format, with cascading indents",
+							"Maintain space column between keyword and args, aligning keywords to left",
+							"Maintain space column between keyword and args, aligning keywords to right"
+						],
+						"default": "standard",
+						"markdownDescription": "Where to place keywords"
+					},
+					"sqlite3-editor.format.keywordCase": {
+						"type": "string",
+						"enum": [
+							"preserve",
+							"upper",
+							"lower"
+						],
+						"default": "preserve",
+						"markdownDescription": "Whether to print keywords in ALL CAPS, lowercase, or preserve existing"
+					},
+					"sqlite3-editor.format.linesBetweenQueries": {
+						"type": "integer",
+						"default": 1,
+						"minimum": 0,
+						"markdownDescription": "How many newlines to place between each query / statement"
+					},
+					"sqlite3-editor.format.logicalOperatorNewline": {
+						"type": "string",
+						"enum": [
+							"before",
+							"after"
+						],
+						"default": "before",
+						"markdownDescription": "Whether to break before or after AND and OR"
+					},
+					"sqlite3-editor.format.newlineBeforeSemicolon": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Whether to place semicolon on its own line or on previous line"
+					},
+					"sqlite3-editor.format.tabulateAlias": {
+						"type": "boolean",
+						"default": false,
+						"markdownDescription": "Whether to right-align aliases to the longest line in the SELECT clause"
+					},
+					"sqlite3-editor.format.trailingNewLine": {
+						"type": "boolean",
+						"default": true
+					},
+					"sqlite3-editor.experimental.queryEditorKeywordSyntaxDocumentation": {
+						"type": "boolean",
+						"default": false
+					},
+					"sqlite3-editor.insertHelpComment": {
+						"type": "boolean",
+						"default": true,
+						"markdownDescription": "Whether to display the help comment in the query editor."
+					}
+				}
+			}
+		],
+		"languages": [
+			{
+				"id": "query-editor",
+				"aliases": [
+					"SQLite3 Editor Query"
+				],
+				"extensions": [],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "sqlite3-editor-database",
+				"extensions": [
+					".db",
+					".db3",
+					".sdb",
+					".s3db",
+					".sqlitedb",
+					".mddata",
+					".sqlite",
+					".sqlite3",
+					".sl3",
+					".vscdb",
+					".sq3"
+				]
+			}
+		],
+		"grammars": [
+			{
+				"language": "query-editor",
+				"scopeName": "source.query-editor",
+				"path": "./query-editor.tmLanguage.json"
+			}
+		],
+		"configurationDefaults": {
+			"[query-editor]": {
+				"editor.semanticHighlighting.enabled": true
+			}
+		},
+		"keybindings": [
+			{
+				"command": "sqlite3-editor.execute",
+				"key": "shift+enter",
+				"mac": "shift+enter",
+				"when": "editorLangId == query-editor"
+			},
+			{
+				"command": "sqlite3-editor.goto",
+				"key": "ctrl+g",
+				"mac": "ctrl+g",
+				"when": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional"
+			},
+			{
+				"command": "sqlite3-editor.noop",
+				"key": "ctrl+z",
+				"mac": "cmd+z",
+				"when": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional"
+			},
+			{
+				"command": "sqlite3-editor.noop",
+				"key": "ctrl+shift+z",
+				"mac": "cmd+shift+z",
+				"when": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional"
+			},
+			{
+				"command": "sqlite3-editor.noop",
+				"key": "ctrl+y",
+				"mac": "cmd+y",
+				"when": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional"
+			},
+			{
+				"command": "sqlite3-editor.noop",
+				"key": "ctrl+shift+z",
+				"mac": "cmd+shift+z",
+				"when": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional"
+			},
+			{
+				"command": "sqlite3-editor.noop",
+				"key": "ctrl+y",
+				"mac": "cmd+y",
+				"when": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional"
+			}
+		],
+		"views": {
+			"explorer": [
+				{
+					"id": "sqlite3-editor.tableList",
+					"name": "SQLite3 Editor Tables",
+					"when": "activeCustomEditorId == sqlite3-editor.editor || activeCustomEditorId == sqlite3-editor.optional || sqlite3-editor.isQueryEditorActive"
+				}
+			]
+		},
+		"customEditors": [
+			{
+				"viewType": "sqlite3-editor.editor",
+				"displayName": "SQLite3 Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.db"
+					},
+					{
+						"filenamePattern": "*.db3"
+					},
+					{
+						"filenamePattern": "*.sdb"
+					},
+					{
+						"filenamePattern": "*.s3db"
+					},
+					{
+						"filenamePattern": "*.sqlitedb"
+					},
+					{
+						"filenamePattern": "*.mddata"
+					},
+					{
+						"filenamePattern": "*.sqlite"
+					},
+					{
+						"filenamePattern": "*.sqlite3"
+					},
+					{
+						"filenamePattern": "*.sl3"
+					},
+					{
+						"filenamePattern": "*.vscdb"
+					},
+					{
+						"filenamePattern": "*.sq3"
+					}
+				],
+				"priority": "default"
+			},
+			{
+				"viewType": "sqlite3-editor.optional",
+				"displayName": "SQLite3 Editor",
+				"selector": [
+					{
+						"filenamePattern": "*"
+					}
+				],
+				"priority": "option"
+			}
+		]
+	},
+	"keywords": [
+		"sqlite",
+		"database",
+		"viewer",
+		"table"
+	],
+	"author": "",
+	"private": true,
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	},
+	"devDependencies": {
+		"@types/node": "^18.15.5",
+		"@types/vscode": "^1.66.0",
+		"@vscode/vsce": "^2.22.0",
+		"cross-env": "^7.0.3",
+		"esbuild": "^0.19.7",
+		"license-checker": "^25.0.1",
+		"tsx": "^4.3.0",
+		"typescript": "^5.3.2"
+	},
+	"dependencies": {
+		"i18next": "^22.4.15",
+		"jsonc-parser": "^3.2.0",
+		"node-fetch": "^3.3.1",
+		"sql-formatter": "^12.2.0",
+		"zod": "^3.22.4"
+	},
+	"__metadata": {
+		"id": "b45c1a9d-029a-4649-94ef-f74559881c8a",
+		"publisherId": "5c69fe58-fcf2-4e13-bf3c-03e7ff601540",
+		"publisherDisplayName": "yy0931",
+		"targetPlatform": "undefined",
+		"isApplicationScoped": false,
+		"updated": true,
+		"isPreReleaseVersion": false,
+		"installedTimestamp": 1705042807934,
+		"preRelease": false
+	}
+}
